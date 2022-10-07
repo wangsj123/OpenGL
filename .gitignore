@@ -1,0 +1,7 @@
+# .gitignore
+.vs/
+Debug/
+Release/
+x64/
+OpenGL.vcxproj.filters
+OpenGL.vcxproj.user
