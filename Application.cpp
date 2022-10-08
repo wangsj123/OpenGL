@@ -199,14 +199,32 @@ int main(void)
     unsigned int shader = CreateShader(source.vertexSource, source.fragmentSource);;
     glUseProgram(shader);
 
+    GLCall(unsigned int location = glGetUniformLocation(shader, "u_Color"));
+    ASSERT(location != -1);
+    GLCall(glUniform4f(location, 0.2f, 0.3f, 0.8f, 1.0f));
+
+    float r = 0.0f;
+    float increament = 0.005f;
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
+        GLCall(glUniform4f(location, r, 0.3f, 0.8f, 1.0f));
         //glDrawArrays(GL_TRIANGLES, 0, 3);
-        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_INT, nullptr));
+        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+
+        if (r > 1.0f)
+        {
+            increament = -0.005f;
+        }
+        else if (r < 0.0f)
+        {
+            increament = 0.005f;
+        }
+
+        r += increament;
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
