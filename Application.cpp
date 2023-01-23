@@ -1,4 +1,4 @@
-#include<GL/glew.h>
+#include<GLEW/glew.h>
 #include <GLFW/glfw3.h>
 
 #include<iostream>
@@ -120,7 +120,7 @@ static unsigned int CreateShader(const std::string& vertexShader, const std::str
 
     return program;
 }
-int main(void)
+int main000(void)
 {
     GLFWwindow* window;
 
