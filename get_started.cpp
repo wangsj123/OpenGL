@@ -3,9 +3,12 @@
 #include "GLFW/glfw3.h"
 #include "Shader.h"
 
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#include "Camera.h"
+
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -17,11 +20,17 @@
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+Camera camera(cameraPos, cameraFront, cameraUp);
 
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 float fov = 45.0f;
+
+bool firstMouse = true;
+glm::vec2 lastPos = glm::vec2(0.0f, 0.0f);
+float yaw = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
+float pitch = 0.0f;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);
@@ -199,7 +208,6 @@ int main()
 	glm::mat4 view = glm::mat4(1.0f);
 	glm::mat4 project = glm::mat4(1.0f);
 	model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0, 0));
-	view = glm::lookAt(glm::vec3(0, 3.0f, 3.0f), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 	glUniformMatrix4fv(glGetUniformLocation(shader.getId(), "model"), 1, GL_FALSE, glm::value_ptr(model));
 
 	//
@@ -232,7 +240,8 @@ int main()
 		view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));*/
 
 		// camera/view transformation
-		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+		// glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+		view = camera.getViewMat();
 		glUniformMatrix4fv(glGetUniformLocation(shader.getId(), "view"), 1, GL_FALSE, glm::value_ptr(view));
 
 		project = glm::perspective(glm::radians(fov), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -270,10 +279,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
-glm::vec2 lastPos = glm::vec2(0.0f, 0.0f);
-float yaw = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
-float pitch = 0.0f;
-bool firstMouse = true;
 void mouse_callback(GLFWwindow* window, double xPos, double yPos)
 {
 	if (window == NULL)
@@ -302,24 +307,33 @@ void mouse_callback(GLFWwindow* window, double xPos, double yPos)
 
 	// make sure that when pitch is out of bounds, screen doesn't get flipped
 	if (pitch > 89.0f)
+	{
 		pitch = 89.0f;
+	}
 	if (pitch < -89.0f)
+	{
 		pitch = -89.0f;
+	}
 
 	glm::vec3 front;
 	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
 	front.y = sin(glm::radians(pitch));
 	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 	cameraFront = glm::normalize(front);
+	camera.setDir(cameraFront);
 }
 
 void scroll_callback(GLFWwindow* window, double xOffset, double yOffset)
 {
 	fov -= (float)yOffset;
 	if (fov < 1.0f)
+	{
 		fov = 1.0f;
+	}
 	if (fov > 60.0f)
+	{
 		fov = 60.0f;
+	}
 }
 
 void processInput(GLFWwindow* window)
@@ -333,17 +347,21 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
 		cameraPos -= cameraSpeed * glm::normalize((glm::cross(cameraFront, cameraUp)));
+		camera.setPos(cameraPos);
 	}
 	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
 		cameraPos += cameraSpeed * glm::normalize((glm::cross(cameraFront, cameraUp)));
+		camera.setPos(cameraPos);
 	}
 	else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
 		cameraPos -= cameraSpeed * cameraFront;
+		camera.setPos(cameraPos);
 	}
 	else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
 		cameraPos += cameraSpeed * cameraFront;
+		camera.setPos(cameraPos);
 	}
 }
