@@ -1,9 +1,12 @@
 #version 330 core
 
-in vec3 oNormal;
-in vec2 oTexCoord;
-in vec3 oFragPos;
-in vec4 oLightSpaceFragPos;
+in VSFS_DATA
+{
+	vec3 fragPos;
+	vec3 normal;
+	vec2 texCoord;
+	vec4 lightSpaceFragPos;
+} fs_in;
 
 uniform sampler2D diffuseTexture;
 uniform sampler2D depthMap;
@@ -44,7 +47,7 @@ float calculateShadow(vec4 lightSpaceFragPos)
     float curDepth = projCoord.z;
 
     float bias = 0.005;
-    vec3 lightDir = normalize(lightPos - oFragPos);
+    vec3 lightDir = normalize(lightPos - fs_in.fragPos);
     //bias = max(0.05*(1 - dot(oNormal, lightDir)), bias);
     float shadow = curDepth - bias > closeDepth ? 1.0 : 0.0;
 
@@ -52,24 +55,24 @@ float calculateShadow(vec4 lightSpaceFragPos)
 }
 void main()
 {
-    vec3 color = texture(diffuseTexture, oTexCoord).rgb;
-    vec3 normal = normalize(oNormal);
+    vec3 color = texture(diffuseTexture, fs_in.texCoord).rgb;
+    vec3 normal = normalize(fs_in.normal);
     vec3 lightColor = vec3(1.0);
 
     vec3 ambient = 0.3 * lightColor;
 
-    vec3 lightDir = normalize(lightPos - oFragPos);
+    vec3 lightDir = normalize(lightPos - fs_in.fragPos);
     float diff = max(dot(lightDir, normal), 0.0);
     vec3 diffuse = diff * lightColor;
 
-    vec3 viewDir = normalize(viewPos - oFragPos);
+    vec3 viewDir = normalize(viewPos - fs_in.fragPos);
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = 0.0;
     vec3 halfDir = normalize(lightDir + viewDir);
     spec = pow(max(dot(halfDir, normal), 0.0), 64.0);
     vec3 specular = spec * lightColor;
 
-    float shadow = calculateShadow(oLightSpaceFragPos);
+    float shadow = calculateShadow(fs_in.lightSpaceFragPos);
     vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
 
     FragColor = vec4(lighting, 1.0);

@@ -9,19 +9,20 @@ uniform mat4 view;
 uniform mat4 project;
 uniform mat4 lightSpaceMatrix;
 
-out vec3 oNormal;
-out vec2 oTexCoord;
-out vec3 oFragPos;
-out vec4 oLightSpaceFragPos;
-out mat4 oLightSpaceMatrix;
+out VSFS_DATA
+{
+	vec3 fragPos;
+	vec3 normal;
+	vec2 texCoord;
+	vec4 lightSpaceFragPos;
+} vs_out;
 
 void main()
 {
-	oNormal = mat3(transpose(inverse(model))) * aNormal;
-	oTexCoord = aTexCoord;
-	oFragPos = vec3(model * vec4(aPos, 1.0));
-	oLightSpaceFragPos = lightSpaceMatrix * vec4(oFragPos,1.0);
-	oLightSpaceMatrix = lightSpaceMatrix;
+	vs_out.normal = mat3(transpose(inverse(model))) * aNormal;
+	vs_out.texCoord = aTexCoord;
+	vs_out.fragPos = vec3(model * vec4(aPos, 1.0));
+	vs_out.lightSpaceFragPos = lightSpaceMatrix * vec4(vs_out.fragPos,1.0);
 
 	gl_Position = project * view * model * vec4(aPos, 1.0);
 }

@@ -140,7 +140,7 @@
     <ClCompile Include="shadowmap.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="debug_depth.fs" />
+    <None Include="debug_depth.ps" />
     <None Include="debug_depth.vs" />
     <None Include="shadowmap.fs" />
     <None Include="shadowmap.vs" />
